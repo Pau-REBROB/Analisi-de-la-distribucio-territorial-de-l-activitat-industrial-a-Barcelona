@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# VS Code
+.vscode/
+
+# Fitxers temporals de QGIS
+*.qgz~
+*.qgs~
+*.qgd
+*.aux.xml
+*.qmd
+
+# Resultats generats
+resultats/
+
+# Dades temporals i memòries cau
+*.gpkg-wal
+*.gpkg-shm
+*.tmp
+*.log
+
+# Sistema operatiu
+.DS_Store
+Thumbs.db
