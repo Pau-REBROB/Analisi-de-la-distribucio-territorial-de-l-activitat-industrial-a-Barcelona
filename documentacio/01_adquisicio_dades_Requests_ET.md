@@ -119,7 +119,7 @@ root.tag
 L’arrel està estructurada en fills (*children*) que pengen directament de l’ella. Aquests fills estan estructurats en forma d’etiqueta (*tag*) i atributs (*attributes*).
 
 Així, del següent XML d’exemple, *data* és l’etiqueta de l’element arrel, que conté 3 fills etiquetats com a *country*. Cada un d’aquests fills té un sol atribut, que és *name*.
-```xml
+```XML
 <?xml version="1.0"?>
 <data>
 	<country name="Liechtenstein">
@@ -145,7 +145,7 @@ for child in root:
 ```
 
 Cada fill pot tenir associada nova informació, addicional als atributs. En aquest cas, es declara una etiqueta filla i un contingut textual amb el valor associat a l’etiqueta.
-```xml
+```XML
 <?xml version="1.0"?>
 <data>
 	<country name="Liechtenstein">
@@ -260,14 +260,14 @@ for child in root.findall('country'):
 Els *namespaces* son un sistema d’etiquetatge de la forma `prefix:sometag` que permeten un major grau de discretització de la informació en un document XML.
 
 Els *namespaces* es defineixen amb `xmlns` i un URI identificador.
-```xml
+```XML
 <actors xmlns="http://people.example.com">
 ```
 
 D’aquesta manera, tots els fills conservaran l’URI com a prefix de la seva etiqueta, de la forma `{namespace}tag`.
 
 Així, en l’arxiu XML següent d’exemple totes les etiquetes dels nodes conserven l’URI com a prefix.
-```xml 
+```XML 
 <?xml version="1.0"?>
 <data xmlns="http://example.com">
 	<country name="Liechtenstein">
@@ -318,7 +318,7 @@ Un *namespace* pot anar acompanyat d’un prefix identificador.
 ```
 
 Aquest cas s’utilitza habitualment quan s’ha de declarar més d’un *namespace* i, així, el prefix permet identificar quin element pertany a cada *namespace*. Així, seguint amb l’exemple, utilitzant dos prefixos associats a dues URI diferents s’aconsegueix diferenciar els elements segons si pertanyen a un grup o un altre.
-```xml
+```XML
 <?xml version="1.0"?>
 <data xmlns:europa="http://example_europa.com"
       xmlns:mon="http://example_mon.com">
