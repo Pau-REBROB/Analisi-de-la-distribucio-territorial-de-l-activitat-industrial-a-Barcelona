@@ -65,6 +65,25 @@ url = "https://www.meteo.cat/"
 r = requests.get(url, timeout=60)
 ```
 
+#### Petició al cadastre
+En el cas d'aquest projecte, es realitza una petició `get` al cadastre espanyol dels edificis (*buildings*) en format XML a través de la seva URL.
+```python
+url = "https://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.BU.atom.xml"
+
+response = requests.get(url)
+response.raise_for_status()
+
+print("Codi de resposta:", response.status_code)
+print("Mida del catàleg:", len(response.content), "bytes")
+
+# Codi de resposta: 200
+# Mida del catàleg: 682565 bytes
+```
+
+El codi de resposta `200` indica que la petició s'ha realitzat correctament.
+
+El resultat de la petició s'emmagatzema en la variable `response`, un objecte de tipus `Response`.
+
 ## xml.etree.ElementTree (ET)
 `xml.etree.ElementTree` - o `ET` - és una llibreria Python que implementa una manera simple i eficient de tractar i crear dades tipus XML.
 
@@ -354,3 +373,293 @@ for country in root.findall('ex:country', ns):
 ```
 
 `ElementTree` substitueix internament els prefixos del diccionari pels *namespaces* corresponents. Els prefixos son propis, i no cal que coincideixin amb els prefixos originals del document XML, si n’hi ha.
+
+#### XML del cadastre
+En el cas d'aquest projecte, es crea primerament un objecte arrel del contingut de la resposta HTTP.
+```python
+root = ET.fromstring(response.content)
+```
+
+Els arxius XML del cadastre estan codificats segons l'estàndard **ATOM**.
+```python
+ET.indent(root)
+ET.dump(root)
+```
+
+L'arrel de l'arxiu XML està etiquetat com a *feed*. L'arxiu presenta una primera capçalera informativa: títol, subtítol, links, drets d'autor, última actualització i autor.
+```python
+<ns0:feed xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ns0="http://www.w3.org/2005/Atom" xmlns:ns1="http://www.georss.org/georss" xml:lang="en">
+  <ns0:title>Download service of Buildings. Territorial Office</ns0:title>
+  <ns0:subtitle>INSPIRE Buildings. Spanish Directorate General for Cadastre </ns0:subtitle>
+  <ns0:link href="http://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.bu.DownloadServ.MD.xml" rel="describedby" type="application/vnd.iso.19139+xml" />
+  <ns0:link href="http://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.BU.atom.xml" rel="self" type="application/atom+xml" hreflang="en" title="This document" />
+  <ns0:link href="http://www.catastro.hacienda.gob.es/" rel="alternate" type="text/html" hreflang="en" title="Cadastral web page" />
+  <ns0:id>http://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.BU.atom.xml</ns0:id>
+  <ns0:rights>Copyright (c) 2012", ES.SDGC; all rights reserved</ns0:rights>
+  <ns0:updated>2026-08-21T00:00:00Z</ns0:updated>
+  <ns0:author>
+    <ns0:name>productosyservicios</ns0:name>
+    <ns0:email>productosyservicios@catastro.hacienda.gob.es</ns0:email>
+  </ns0:author>
+  ```
+Després de la capçalera venen les entrades (*entry*) com a fills directes de l'arrel, amb informació del cadastre de cada província.
+```python
+# Província d'Albacete
+<ns0:entry>
+    <ns0:title>Territorial office 02 Albacete</ns0:title>
+    <ns0:link rel="enclosure" href="http://www.catastro.hacienda.gob.es/INSPIRE/buildings/02/ES.SDGC.bu.atom_02.xml" type="application/atom+xml" />
+    <ns0:id>http://www.catastro.hacienda.gob.es/INSPIRE/buildings/02/ES.SDGC.bu.atom_02.xml</ns0:id>
+    <ns0:rights>Copyright (c) 2012", ES.SDGC; all rights reserved</ns0:rights>
+    <ns0:updated>2026-08-21T00:00:00Z</ns0:updated>
+    <ns1:polygon> 38.022	-2.883	38.022	-0.916	39.423	-0.916	39.423	-2.883	38.022	-2.883</ns1:polygon>
+    <ns0:category term="Buildings" scheme="http://inspire-registry.jrc.ec.europa.eu/registers/FCD/items/160" label="Buildings" xml:lang="en" />
+    <ns0:content type="xhtml" xml:lang="sp">
+      <html:div>
+		  Buildings by municipalities:
+		  <html:br />
+        <html:font color="#000000" size="2" face="Verdana, Arial, Helvetica, sans-serif">
+          <html:strong>Municipalities </html:strong>
+        </html:font>
+        <html:br />
+        <html:div id="scrolltable" style="border-right: #6699CC 1px solid; border-top: #6699CC 1px solid; border-left: #6699CC 1px solid; border-bottom: #6699CC 1px solid; overflow:auto;  height:100px "> 
+		
+02001-ABENGIBRE                                      <html:br />
+02002-ALATOZ                                         <html:br />
+02004-ALBATANA                                       <html:br />
+02005-ALBOREA                                        <html:br />
+02006-ALCADOZO                                       <html:br />
+02007-ALCALA DEL JUCAR                               <html:br />
+02008-ALCARAZ                                        <html:br />
+02009-ALMANSA                                        <html:br />
+02010-ALPERA                                         <html:br />
+02011-AYNA                                           <html:br />
+02012-BALAZOTE                                       <html:br />
+02013-BALSA DE VES                                   <html:br />
+02014-EL BALLESTERO                                  <html:br />
+02015-BARRAX                                         <html:br />
+02016-BIENSERVIDA                                    <html:br />
+02017-BOGARRA                                        <html:br />
+02018-BONETE                                         <html:br />
+02019-EL BONILLO                                     <html:br />
+02020-CARCELEN                                       <html:br />
+02021-CASAS DE JUAN NUÑEZ                            <html:br />
+02022-CASAS DE LAZARO                                <html:br />
+02023-CASAS DE VES                                   <html:br />
+02024-CASAS IBAÑEZ                                   <html:br />
+02025-CAUDETE                                        <html:br />
+02026-CENIZATE                                       <html:br />
+02027-CORRAL-RUBIO                                   <html:br />
+02028-COTILLAS                                       <html:br />
+02029-CHINCHILLA DE MONTE-ARAGON                     <html:br />
+02030-ELCHE DE LA SIERRA                             <html:br />
+02031-FEREZ                                          <html:br />
+02032-FUENSANTA                                      <html:br />
+02033-FUENTE-ALAMO                                   <html:br />
+02034-FUENTEALBILLA                                  <html:br />
+02035-LA GINETA                                      <html:br />
+02036-GOLOSALVO                                      <html:br />
+02037-HELLIN                                         <html:br />
+02038-LA HERRERA                                     <html:br />
+02039-HIGUERUELA                                     <html:br />
+02040-HOYA-GONZALO                                   <html:br />
+02041-JORQUERA                                       <html:br />
+02042-LETUR                                          <html:br />
+02043-LEZUZA                                         <html:br />
+02044-LIETOR                                         <html:br />
+02045-MADRIGUERAS                                    <html:br />
+02046-MAHORA                                         <html:br />
+02047-MASEGOSO                                       <html:br />
+02048-MINAYA                                         <html:br />
+02049-MOLINICOS                                      <html:br />
+02050-MONTALVOS                                      <html:br />
+02051-MONTEALEGRE DEL CASTILLO                       <html:br />
+02052-MOTILLEJA                                      <html:br />
+02053-MUNERA                                         <html:br />
+02054-NAVAS DE JORQUERA                              <html:br />
+02055-NERPIO                                         <html:br />
+02056-ONTUR                                          <html:br />
+02057-OSSA DE MONTIEL                                <html:br />
+02058-PATERNA DEL MADERA                             <html:br />
+02059-PEÑASCOSA                                      <html:br />
+02060-PEÑAS DE SAN PEDRO                             <html:br />
+02061-PETROLA                                        <html:br />
+02062-POVEDILLA                                      <html:br />
+02063-POZOHONDO                                      <html:br />
+02064-POZO-LORENTE                                   <html:br />
+02065-POZUELO                                        <html:br />
+02066-LA RECUEJA                                     <html:br />
+02067-RIOPAR                                         <html:br />
+02068-ROBLEDO                                        <html:br />
+02069-LA RODA                                        <html:br />
+02070-SALOBRE                                        <html:br />
+02071-SAN PEDRO                                      <html:br />
+02072-SOCOVOS                                        <html:br />
+02073-TARAZONA DE LA MANCHA                          <html:br />
+02074-TOBARRA                                        <html:br />
+02075-VALDEGANGA                                     <html:br />
+02076-VIANOS                                         <html:br />
+02077-VILLA DE VES                                   <html:br />
+02078-VILLALGORDO DEL JUCAR                          <html:br />
+02079-VILLAMALEA                                     <html:br />
+02080-VILLAPALACIOS                                  <html:br />
+02081-VILLARROBLEDO                                  <html:br />
+02082-VILLATOYA                                      <html:br />
+02083-VILLAVALIENTE                                  <html:br />
+02084-VILLAVERDE DE GUADALIMAR                       <html:br />
+02085-VIVEROS                                        <html:br />
+02086-YESTE                                          <html:br />
+02087-POZO CAÑADA                                    <html:br />
+02900-ALBACETE                                       <html:br />
+        </html:div>
+      </html:div>
+    </ns0:content>
+  </ns0:entry>
+```
+
+De cada *entry* pengen els elements *title*, *link*, *id*, *rights*, *updated*, *polygon*, *category*, *content*.
+
+En el cas que ocupa aquest projecte, caldrà treballar amb les dades de la província de Barcelona.
+
+A la mateixa arrel apareixen fins a tres *namespace* diferents:
+- xmlns:html="http://www.w3.org/1999/xhtml"
+- xmlns:ns0="http://www.w3.org/2005/Atom"
+- xmlns:ns1="http://www.georss.org/georss"
+  
+El prefix present a les entrades provincials és el que es correspon amb el servei ATOM (*"http://www.w3.org/2005/Atom"*). Es crea un diccionari de *namespace* per agilitzar l'extracció d'informació.
+```python
+ns = {"atom": "http://www.w3.org/2005/Atom"}
+```
+
+Per començar a treballar, es crea una variable amb totes les entrades (*entry*) del cadastre.
+```python
+entries = root.findall("atom:entry", ns)
+
+print("Nombre total d'entrades:", len(entries))
+
+# Nombre total d'entrades: 56
+```
+
+Es fa una iteració per cada entrada (per cada província) per trobar aquella que es correspon amb Barcelona.
+```python
+barcelona_url = None
+
+for entry in entries:
+    title = entry.findtext("atom:title", default="", namespaces=ns)
+
+    if "Barcelona" in title:
+      print("\nEntrada trobada:")
+      print("Títol:", title)
+
+# Entrada trobada:
+# Títol: Territorial office 08 Barcelona
+```
+
+L'accés al catàleg provincial és, de nou, a través d'un XML proporcionat com a URL. Aquesta direcció es troba a l'element *link*, del tipus *<ns0:link rel="enclosure" href="http://www.catastro.hacienda.gob.es/INSPIRE/buildings/02/ES.SDGC.bu.atom_02.xml" type="application/atom+xml" />*. L'element *link* presenta dos atributs: *rel* i *href*.
+
+Es realitza una segona cerca en el nivell inferior a l'entrada. Es filtra per *rel* com a *enclosure* i es recupera l'URL que es correspon amb l'atribut *href*.
+```python
+barcelona_url = None
+
+for entry in entries:
+  title = entry.findtext("atom:title", default="", namespaces=ns)
+
+  if "Barcelona" in title:
+    print("\nEntrada trobada:")
+    print("Títol:", title)
+
+    for link in entry.findall("atom:link", ns):
+      if link.attrib.get("rel") == "enclosure":
+        barcelona_url = link.attrib["href"]
+        print("Província:", title)
+        print("Enllaç:", barcelona_url)
+
+        break
+
+# Província: Territorial office 08 Barcelona
+# Enllaç: http://www.catastro.hacienda.gob.es/INSPIRE/buildings/08/ES.SDGC.bu.atom_08.xml
+```
+
+Un cop extreta l'adreça del catàleg provincial, es genera una nova petició `get` i es crea una nova arrel del `response.content`.
+```python
+response_bcn = requests.get(barcelona_url)
+response_bcn.raise_for_status()
+
+print("Codi de resposta:", response_bcn.status_code)
+print("Mida del catàleg:", len(response_bcn.content), "bytes")
+
+root_bcn = ET.fromstring(response_bcn.content)
+
+# Codi de resposta: 200
+# Mida del catàleg: 543609 bytes
+```
+
+El catàleg provincial és similar al genèric. Conté la mateixa capçalera descriptiva introductòria i els mateixos *namespaces*.
+```XML
+<ns0:feed xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ns0="http://www.w3.org/2005/Atom" xmlns:ns1="http://inspire.ec.europa.eu/schemas/inspire_dls/1.0" xmlns:ns3="http://www.georss.org/georss" xml:lang="en">
+  <ns0:title>Download service of Building. Territorial Office 08 - Barcelona</ns0:title>
+  <ns0:subtitle>INSPIRE Buildings. Spanish Directorate General for Cadastre</ns0:subtitle>
+  <ns0:link href="http://www.catastro.hacienda.gob.es/INSPIRE/Building/ES.SDGC.BU.DownloadServ.MD.xml" rel="describedby" type="application/vnd.iso.19139+xml" />
+  <ns0:link href="http://www.catastro.hacienda.gob.es/INSPIRE/Building/08/ES.SDGC.BU.atom_08.xml" rel="self" type="application/atom+xml" hreflang="en" title="This document" />
+  <ns0:link href="http://www.catastro.hacienda.gob.es/" rel="alternate" type="text/html" hreflang="en" title="Cadastral web page" />
+  <ns0:id>http://www.catastro.hacienda.gob.es/INSPIRE/Building/08/ES.SDGC.BU.atom_08.xml</ns0:id>
+  <ns0:rights>This service can be used free of charge in every instance,  as long as that the D. G. of the Cadastre (Ministry of Finance)  is mentioned as author and owner of the information</ns0:rights>
+  <ns0:updated>2026-08-21T00:00:00Z</ns0:updated>
+  <ns0:author>
+    <ns0:name>productosyservicios</ns0:name>
+    <ns0:email>productosyservicios@catastro.hacienda.gob.es</ns0:email>
+  </ns0:author>
+```
+
+Seguidament venen les entrades (*entry*) amb la informació del cadastre de cada municipi.
+```XML
+<ns0:entry>
+    <ns0:title> 08001-ABRERA buildings</ns0:title>
+    <ns1:spatial_dataset_identifier_code>BU</ns1:spatial_dataset_identifier_code>
+    <ns1:spatial_dataset_identifier_namespace>SDGC</ns1:spatial_dataset_identifier_namespace>
+    <ns0:content type="xhtml" xml:lang="en">
+      <html:div>
+		  </html:div>
+    </ns0:content>
+    <ns0:link rel="enclosure" href="https://www.catastro.hacienda.gob.es/INSPIRE/Buildings/08/08001-ABRERA/A.ES.SDGC.BU.08001.zip" type="application/atom+xml" hreflang="en" />
+    <ns0:id>https://www.catastro.hacienda.gob.es/INSPIRE/Buildings/08/08001-ABRERA/A.ES.SDGC.BU.08001.zip</ns0:id>
+    <ns0:rights>This service can be used free of charge in every instance,  as long as that the D. G. of the Cadastre (Ministry of Finance)  is mentioned as author and owner of the information</ns0:rights>
+    <ns0:updated>2026-08-21T00:00:00Z</ns0:updated>
+    <ns3:polygon>41.49491008748271 1.8626930856981512 41.49491008748271 1.9484048041773987 41.53681609005559 1.9484048041773987 41.53681609005559 1.8626930856981512 41.49491008748271 1.8626930856981512</ns3:polygon>
+    <ns0:category term="http://www.opengis.net/def/crs/EPSG/0/25831" label="ETRS89" />
+  </ns0:entry>
+```
+
+La informació geogràfica es troba en l'element *link*, que ofereix un enllaç de descàrrega d'un arxiu comprimit ZIP: *<ns0:link rel="enclosure" href="https://www.catastro.hacienda.gob.es/INSPIRE/Buildings/08/08001-ABRERA/A.ES.SDGC.BU.08001.zip" type="application/atom+xml" hreflang="en" />*.
+
+EXPLICACIÓ DEL NEXT
+
+```python
+print("Nombre total d'entrades BCN:", len(entries_bcn))
+
+registres_cataleg = []
+
+for entry in entries_bcn:
+  titol = entry.findtext("atom:title", default="", namespaces=ns)
+
+  enllaç = None
+
+  for link in entry.findall("atom:link", ns):
+      if link.get("rel") == "enclosure":
+          enllaç = link
+          break
+
+  registres_cataleg.append({
+      "titol_cataleg": titol,
+      "href_original": enllaç.get("href") if enllaç is not None else None,
+      "tipus": enllaç.get("type") if enllaç is not None else None
+  })
+
+df_cataleg = pd.DataFrame(registres_cataleg)
+
+print("Entrades del catàleg:", len(df_cataleg))
+
+# Nombre total d'entrades BCN: 311
+# Entrades del catàleg: 311
+```
+
+El resultat és un dataframe de totes les entrades del catàleg, amb el títol (el nom del municpi) i l'adreça que permet descarregar l'arxiu de les geometries dels edificis.
